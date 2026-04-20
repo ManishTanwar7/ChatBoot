@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WhatsApp Chat Boot</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      min-height: 100vh;
+      padding: 20px;
+      color: #fff;
+    }
+
+    .app {
+      max-width: 1100px;
+      margin: auto;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 20px;
+    }
+
+    .panel,
+    .chat-panel {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      overflow: hidden;
+    }
+
+    .panel-header,
+    .chat-header {
+      background: rgba(0,0,0,0.18);
+      padding: 18px 20px;
+      font-size: 22px;
+      font-weight: bold;
+      letter-spacing: 0.4px;
+    }
+
+    .panel-body {
+      padding: 20px;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #d9f7ff;
+      font-weight: 600;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      outline: none;
+      transition: 0.25s;
+      font-size: 14px;
+    }
+
+    .field input::placeholder,
+    .field textarea::placeholder {
+      color: rgba(255,255,255,0.7);
+    }
+
+    .field select option {
+      color: #111;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: #38ef7d;
+      box-shadow: 0 0 0 3px rgba(56,239,125,0.15);
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    button {
+      border: none;
+      padding: 12px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s ease;
+    }
+
+    .primary {
+      background: linear-gradient(135deg, #00c853, #64dd17);
+      color: #06210f;
+      flex: 1;
+    }
+
+    .secondary {
+      background: linear-gradient(135deg, #00b0ff, #2979ff);
+      color: white;
+      flex: 1;
+    }
+
+    .danger {
+      background: linear-gradient(135deg, #ff5252, #ff1744);
+      color: white;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      opacity: 0.95;
+    }
+
+    .status {
+      margin-top: 14px;
+      font-size: 14px;
+      color: #d6ffe8;
+      min-height: 18px;
+    }
+
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-sub {
+      font-size: 13px;
+      color: #cde8f0;
+      font-weight: normal;
+    }
+
+    .chat-body {
+      padding: 20px;
+      height: 75vh;
+      overflow-y: auto;
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.05), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(255,255,255,0.05), transparent 30%);
+    }
+
+    .empty {
+      text-align: center;
+      color: #d1e7ec;
+      margin-top: 60px;
+      opacity: 0.85;
+    }
+
+    .bubble {
+      max-width: 72%;
+      padding: 14px 16px;
+      border-radius: 16px;
+      margin-bottom: 14px;
+      position: relative;
+      word-wrap: break-word;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.18);
+    }
+
+    .sent {
+      margin-left: auto;
+      background: linear-gradient(135deg, #25d366, #128c7e);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .received {
+      margin-right: auto;
+      background: rgba(255,255,255,0.14);
+      color: #fff;
+      border-bottom-left-radius: 4px;
+    }
+
+    .meta {
+      font-size: 12px;
+      opacity: 0.88;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    .type-tag {
+      display: inline-block;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.18);
+      margin-bottom: 8px;
+    }
+
+    .content {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .time {
+      text-align: right;
+      margin-top: 8px;
+      font-size: 11px;
+      opacity: 0.85;
+    }
+
+    .footer-note {
+      margin-top: 15px;
+      font-size: 12px;
+      color: #cce7ef;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 900px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .chat-body {
+        height: 60vh;
+      }
+
+      .bubble {
+        max-width: 88%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="panel">
+      <div class="panel-header">Chat Form</div>
+      <div class="panel-body">
+        <div class="field">
+          <label for="sender">Sender Name</label>
+          <input type="text" id="sender" placeholder="Enter sender name" />
+        </div>
+
+        <div class="field">
+          <label for="receiver">Receiver Name</label>
+          <input type="text" id="receiver" placeholder="Enter receiver name" />
+        </div>
+
+        <div class="field">
+          <label for="type">Message Type</label>
+          <select id="type">
+            <option value="text">Text Message</option>
+            <option value="image">Image Message</option>
+            <option value="voice">Voice Message</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="content">Message / URL / Voice Note Name</label>
+          <textarea id="content" placeholder="Type message content here..."></textarea>
+        </div>
+
+        <div class="btn-row">
+          <button class="primary" onclick="sendMessage()">Send Message</button>
+          <button class="secondary" onclick="loadMessages()">Refresh Chat</button>
+        </div>
+
+        <button class="danger" onclick="clearFields()">Clear Form</button>
+
+        <div class="status" id="status"></div>
+
+        <div class="footer-note">
+          Backend is in C++ and uses OOP concepts like abstraction, inheritance,
+          linked list, polymorphism, virtual functions, dynamic memory, and exception handling.
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-panel">
+      <div class="chat-header">
+        <div>WhatsApp Style Chat</div>
+        <div class="chat-sub">C++ Backend Demo</div>
+      </div>
+      <div class="chat-body" id="chatBody">
+        <div class="empty">No messages yet. Send your first message.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "https://your-backend-name.onrender.com";
+
+    function setStatus(msg, isError = false) {
+      const status = document.getElementById("status");
+      status.textContent = msg;
+      status.style.color = isError ? "#ffd3d3" : "#d6ffe8";
+    }
+
+    function clearFields() {
+      document.getElementById("sender").value = "";
+      document.getElementById("receiver").value = "";
+      document.getElementById("type").value = "text";
+      document.getElementById("content").value = "";
+      setStatus("Form cleared.");
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function bubbleHtml(msg) {
+      const type = (msg.type || "text").toLowerCase();
+      const sender = escapeHtml(msg.sender || "");
+      const receiver = escapeHtml(msg.receiver || "");
+      const content = escapeHtml(msg.content || "");
+      const time = escapeHtml(msg.time || "");
+      const align = sender.toLowerCase() === "me" ? "sent" : "received";
+
+      return `
+        <div class="bubble ${align}">
+          <div class="meta">${sender} → ${receiver}</div>
+          <div class="type-tag">${type.toUpperCase()}</div>
+          <div class="content">${content}</div>
+          <div class="time">${time}</div>
+        </div>
+      `;
+    }
+
+    async function sendMessage() {
+      const sender = document.getElementById("sender").value.trim();
+      const receiver = document.getElementById("receiver").value.trim();
+      const type = document.getElementById("type").value;
+      const content = document.getElementById("content").value.trim();
+
+      if (!sender || !receiver || !type || !content) {
+        setStatus("Please fill all fields.", true);
+        return;
+      }
+
+      try {
+        setStatus("Sending message...");
+        const response = await fetch(`${API_BASE}/api/messages`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ sender, receiver, type, content })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.status !== "success") {
+          throw new Error(data.message || "Failed to send message");
+        }
+
+        setStatus("Message sent successfully.");
+        document.getElementById("content").value = "";
+        renderMessages(data.messages || []);
+      } catch (error) {
+        setStatus(error.message, true);
+      }
+    }
+
+    async function loadMessages() {
+      try {
+        setStatus("Loading chat...");
+        const response = await fetch(`${API_BASE}/api/messages`);
+        const data = await response.json();
+
+        if (!response.ok || data.status !== "success") {
+          throw new Error(data.message || "Failed to fetch messages");
+        }
+
+        renderMessages(data.messages || []);
+        setStatus("Chat updated.");
+      } catch (error) {
+        setStatus(error.message, true);
+      }
+    }
+
+    function renderMessages(messages) {
+      const chatBody = document.getElementById("chatBody");
+
+      if (!messages.length) {
+        chatBody.innerHTML = `<div class="empty">No messages yet. Send your first message.</div>`;
+        return;
+      }
+
+      chatBody.innerHTML = messages.map(bubbleHtml).join("");
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    loadMessages();
+  </script>
+</body>
+</html>
